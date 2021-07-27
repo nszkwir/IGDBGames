@@ -8,3 +8,8 @@ Features:
 - Coroutines
 - Viewmodel
 - DI with Hilt
+
+
+
+To set authentication variables please read IGDB api docs <br/>
+https://api-docs.igdb.com/#authentication
