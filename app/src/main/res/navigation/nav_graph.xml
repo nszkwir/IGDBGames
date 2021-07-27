@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/MainFragment">
+
+    <fragment
+        android:id="@+id/MainFragment"
+        android:name="com.spitzer.igdbgames.ui.main.MainFragment"
+        android:label="@string/main_fragment_title"
+        tools:layout="@layout/main_fragment">
+
+        <action
+            android:id="@+id/action_MainFragment_to_GameDetailsFragment"
+            app:destination="@id/GameDetailsFragment">
+            <argument
+                android:name="game"
+                app:argType="com.spitzer.igdbgames.repository.data.Game" />
+        </action>
+
+    </fragment>
+    <fragment
+        android:id="@+id/GameDetailsFragment"
+        android:name="com.spitzer.igdbgames.ui.gamedetails.GameDetailsFragment"
+        android:label="@string/game_details_fragment_title"
+        tools:layout="@layout/game_details_fragment">
+        <argument
+            android:name="game"
+            app:argType="com.spitzer.igdbgames.repository.data.Game" />
+    </fragment>
+</navigation>
