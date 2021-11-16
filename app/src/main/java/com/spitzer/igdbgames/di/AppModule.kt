@@ -19,9 +19,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideGameRepository(
-        service: GamesService
+        service: GamesService,
+        database: GameDatabase
     ): GamesRepository =
-        GamesRepositoryImpl(service)
+        GamesRepositoryImpl(service,database)
 
     @Provides
     @Singleton
