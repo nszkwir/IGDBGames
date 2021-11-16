@@ -24,7 +24,7 @@ class GamesRepositoryImpl @Inject constructor(
     }
 
     companion object {
-        const val GAME_FETCH_NUMBER = 50
+        private const val GAME_FETCH_NUMBER = 50
 
         private fun calculateOffset(currentPage: Int): Int {
             return (currentPage - 1) * GAME_FETCH_NUMBER
