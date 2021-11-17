@@ -123,10 +123,25 @@
                 android:id="@+id/screenshotsRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="@dimen/game_detail_screenshots_padding"
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/game_detail_screenshots_padding"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:listitem="@layout/screenshot_item" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/videosRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/game_detail_screenshots_padding"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/screenshotsRecyclerView"
+                tools:listitem="@layout/screenshot_item" />
 
             <TextView
                 android:id="@+id/platforms"
@@ -139,7 +154,7 @@
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/screenshotsRecyclerView"
+                app:layout_constraintTop_toBottomOf="@+id/videosRecyclerView"
                 tools:text="Nintendo Switch, Playstation 3, Playstation 4, Playstation 5, xBox S" />
 
             <View
