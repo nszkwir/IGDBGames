@@ -120,9 +120,8 @@ class GamesPaginationAdapter(
     }
 
     fun addAll(newGames: List<Game>) {
-        val initialPosition = gameList.size - 1
         gameList.addAll(newGames)
-        notifyItemRangeInserted(initialPosition, newGames.size)
+        notifyItemRangeInserted(gameList.size, newGames.size)
     }
 
     private fun getItem(position: Int) = gameList[position]
