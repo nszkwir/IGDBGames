@@ -27,7 +27,7 @@ class GamesRepositoryImpl @Inject constructor(
         successFromDatabase: (ArrayList<Game>) -> Unit,
         error: () -> Unit
     ) {
-        return withContext(dispatcher) {
+        withContext(dispatcher) {
             val result = safeCall {
                 service.getGames(
                     getGamesQuery(1)
@@ -46,7 +46,7 @@ class GamesRepositoryImpl @Inject constructor(
                         )
                     }
                     successFromNetwork(
-                        resultFromNetwork.size < GAME_FETCH_NUMBER,
+                        (resultFromNetwork.size < GAME_FETCH_NUMBER || resultFromNetwork.isEmpty()),
                         resultFromNetwork
                     )
                 }
@@ -78,7 +78,7 @@ class GamesRepositoryImpl @Inject constructor(
         successFromDatabase: (ArrayList<Game>) -> Unit,
         error: () -> Unit
     ) {
-        return withContext(dispatcher) {
+        withContext(dispatcher) {
             val result = safeCall {
                 service.getGames(
                     getGamesQuery(currentPage)
@@ -97,7 +97,7 @@ class GamesRepositoryImpl @Inject constructor(
                         )
                     }
                     successFromNetwork(
-                        resultFromNetwork.size < GAME_FETCH_NUMBER,
+                        (resultFromNetwork.size < GAME_FETCH_NUMBER || resultFromNetwork.isEmpty()),
                         resultFromNetwork
                     )
                 }
