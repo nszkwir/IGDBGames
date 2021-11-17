@@ -15,8 +15,8 @@
             android:id="@+id/action_MainFragment_to_GameDetailsFragment"
             app:destination="@id/GameDetailsFragment">
             <argument
-                android:name="game"
-                app:argType="com.spitzer.igdbgames.repository.data.Game" />
+                android:name="gameId"
+                app:argType="integer" />
         </action>
 
     </fragment>
@@ -26,7 +26,27 @@
         android:label="@string/game_details_fragment_title"
         tools:layout="@layout/game_details_fragment">
         <argument
-            android:name="game"
-            app:argType="com.spitzer.igdbgames.repository.data.Game" />
+            android:name="gameId"
+            app:argType="integer" />
+
+        <action
+            android:id="@+id/action_GameDetailsFragment_to_VideoFragment"
+            app:destination="@id/VideoFragment">
+            <argument
+                android:name="videoUrl"
+                app:argType="string" />
+        </action>
+
     </fragment>
+
+    <fragment
+        android:id="@+id/VideoFragment"
+        android:name="com.spitzer.igdbgames.ui.video.VideoFragment"
+        android:label="@string/game_video_fragment_title"
+        tools:layout="@layout/video_fragment">
+        <argument
+            android:name="videoUrl"
+            app:argType="string" />
+    </fragment>
+
 </navigation>
