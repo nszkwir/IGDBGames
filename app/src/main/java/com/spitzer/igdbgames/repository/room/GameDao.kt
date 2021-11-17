@@ -15,6 +15,10 @@ interface GameDao {
     @Query("SELECT * FROM games ORDER BY id ASC")
     fun allGames(): List<GameRoomDto>
 
+    @Query("SELECT * FROM games WHERE id = :gameId LIMIT 1")
+    fun getGameById(gameId: Int): GameRoomDto
+
     @Query("DELETE FROM games")
     suspend fun clearGames()
+
 }

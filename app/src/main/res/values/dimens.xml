@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <dimen name="video_item_margin">5dp</dimen>
+    <dimen name="video_item_width">200dp</dimen>
+    <dimen name="video_item_height">150dp</dimen>
     <dimen name="sreenshot_item_margin">5dp</dimen>
-    <dimen name="screenshot_item_width">160dp</dimen>
-    <dimen name="screenshot_item_height">120dp</dimen>
+    <dimen name="screenshot_item_width">200dp</dimen>
+    <dimen name="screenshot_item_height">150dp</dimen>
     <dimen name="screenshot_item_elevation">2dp</dimen>
     <dimen name="game_item_layout_height">120dp</dimen>
     <dimen name="game_item_margin_top">2dp</dimen>

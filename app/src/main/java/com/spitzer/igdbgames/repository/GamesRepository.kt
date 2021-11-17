@@ -1,4 +1,4 @@
-package com.spitzer.igdbgames.repository.retrofit
+package com.spitzer.igdbgames.repository
 
 import com.spitzer.igdbgames.repository.data.Game
 

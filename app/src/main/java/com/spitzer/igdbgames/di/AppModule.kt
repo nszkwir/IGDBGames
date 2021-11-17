@@ -3,7 +3,9 @@ package com.spitzer.igdbgames.di
 import android.app.Application
 import androidx.room.Room
 import com.spitzer.igdbgames.core.network.ApiClient
-import com.spitzer.igdbgames.repository.retrofit.GamesRepository
+import com.spitzer.igdbgames.repository.GameDetailsRepository
+import com.spitzer.igdbgames.repository.GamesDetailsRepositoryImpl
+import com.spitzer.igdbgames.repository.GamesRepository
 import com.spitzer.igdbgames.repository.GamesRepositoryImpl
 import com.spitzer.igdbgames.repository.retrofit.GamesService
 import com.spitzer.igdbgames.repository.room.GameDatabase
@@ -22,7 +24,14 @@ object AppModule {
         service: GamesService,
         database: GameDatabase
     ): GamesRepository =
-        GamesRepositoryImpl(service,database)
+        GamesRepositoryImpl(service, database)
+
+    @Provides
+    @Singleton
+    fun provideGameDetailsRepository(
+        database: GameDatabase
+    ): GameDetailsRepository =
+        GamesDetailsRepositoryImpl(database)
 
     @Provides
     @Singleton

@@ -2,6 +2,7 @@
     <string name="app_name">IGDB Games</string>
     <string name="main_fragment_title">IGDB Games</string>
     <string name="game_details_fragment_title">Game Details</string>
+    <string name="game_video_fragment_title">Game Video</string>
     <string name="error_fetch_data">Could not fetch data</string>
     <string name="error_generic">An error occurred. Please try again.</string>
     <string name="platform_logo_content_description">platform logo</string>
