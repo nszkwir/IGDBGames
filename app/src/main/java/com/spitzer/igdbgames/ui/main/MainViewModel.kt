@@ -8,7 +8,7 @@ import com.spitzer.igdbgames.core.BaseViewModel
 import com.spitzer.igdbgames.core.Event
 import com.spitzer.igdbgames.core.NavigationCommand
 import com.spitzer.igdbgames.repository.data.Game
-import com.spitzer.igdbgames.repository.retrofit.GamesRepository
+import com.spitzer.igdbgames.repository.GamesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -71,7 +71,7 @@ class MainViewModel @Inject constructor(
     fun onGameClicked(gameClicked: Game) {
         val action = MainFragmentDirections
             .actionMainFragmentToGameDetailsFragment(
-                gameClicked
+                gameClicked.id
             )
         _navigation.postValue(Event(NavigationCommand.To(action)))
     }

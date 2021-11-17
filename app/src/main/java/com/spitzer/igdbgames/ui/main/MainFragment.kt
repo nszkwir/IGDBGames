@@ -24,7 +24,6 @@ class MainFragment : BaseFragment() {
     private lateinit var paginationAdapter: GamesPaginationAdapter
 
     private val viewModel: MainViewModel by viewModels()
-
     override fun obtainViewModel() = viewModel
 
     override fun onCreateView(

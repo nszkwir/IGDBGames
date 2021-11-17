@@ -20,21 +20,23 @@ import com.spitzer.igdbgames.extensions.setStarsProgressColor
 import com.spitzer.igdbgames.repository.data.getPlatformsNames
 import com.spitzer.igdbgames.repository.data.getReleaseDate
 import com.spitzer.igdbgames.ui.gamedetails.adapters.ScreenshotsAdapter
+import com.spitzer.igdbgames.ui.gamedetails.adapters.VideosAdapter
 import com.squareup.picasso.Picasso
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class GameDetailsFragment : BaseFragment() {
 
     private var _binding: GameDetailsFragmentBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel: GameDetailsViewModel by viewModels()
+    override fun obtainViewModel() = viewModel
 
     private lateinit var screenshotsAdapter: ScreenshotsAdapter
+    private lateinit var videosAdapter: VideosAdapter
 
     private val args: GameDetailsFragmentArgs by navArgs()
-
-    override fun obtainViewModel() = viewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,27 +44,30 @@ class GameDetailsFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = GameDetailsFragmentBinding.inflate(inflater, container, false)
+        defineObservables()
+        viewModel.loadGameData(args.gameId)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        defineObservables()
-        viewModel.setGameModel(args.game)
-    }
-
     private fun defineObservables() {
-        viewModel.viewState.observe(viewLifecycleOwner, {
-            setupView()
+        viewModel.viewLoaded.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let { isLoaded ->
+                if (isLoaded) {
+                    setupView()
+                }
+                viewModel.setLoading(false)
+            }
         })
     }
 
     private fun setupView() {
         with(viewModel.game.value!!) {
+
             screenshotsAdapter = ScreenshotsAdapter(
                 this.screenshots!!,
                 AppCompatResources.getDrawable(requireContext(), R.drawable.ic_no_image_24)!!
             )
+
             binding.screenshotsRecyclerView.apply {
                 layoutManager =
                     LinearLayoutManager(
@@ -71,6 +76,24 @@ class GameDetailsFragment : BaseFragment() {
                         false
                     )
                 adapter = screenshotsAdapter
+            }
+
+            videosAdapter = VideosAdapter(
+                this.videos!!,
+                AppCompatResources.getDrawable(requireContext(), R.drawable.ic_no_image_24)!!,
+                AppCompatResources.getDrawable(requireContext(), R.drawable.ic_baseline_play_circle_filled_12)!!
+            ) { gameVideo ->
+                viewModel.navigateToVideoFragment(gameVideo)
+            }
+
+            binding.videosRecyclerView.apply {
+                layoutManager =
+                    LinearLayoutManager(
+                        requireContext(),
+                        LinearLayoutManager.HORIZONTAL,
+                        false
+                    )
+                adapter = videosAdapter
             }
 
             binding.title.text = this.name
@@ -114,7 +137,6 @@ class GameDetailsFragment : BaseFragment() {
             }
         }
 
-        viewModel.viewLoaded()
     }
 
     override fun onDestroyView() {
