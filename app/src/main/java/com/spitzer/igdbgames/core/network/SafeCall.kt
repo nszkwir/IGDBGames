@@ -1,6 +1,5 @@
-package com.spitzer.igdbgames.core
+package com.spitzer.igdbgames.core.network
 
-import com.spitzer.igdbgames.core.network.ResultData
 import retrofit2.HttpException
 import retrofit2.Response
 
