@@ -129,9 +129,9 @@ class GamesRepositoryImpl @Inject constructor(
 
         fun getGamesQuery(currentPage: Int, gameFetchNumber: Int = GAME_FETCH_NUMBER): String {
             val offset = (currentPage - 1) * gameFetchNumber
-            return "id, name, first_release_date,summary, storyline, cover.url, platforms.name," +
-                    "platforms.platform_logo.url, genres.name,rating, rating_count, total_rating," +
-                    "total_rating_count,url,screenshots.url;" +
+            return "id, name, first_release_date,summary, storyline, cover.url, platforms.name, " +
+                    "platforms.platform_logo.url, genres.name,rating, rating_count, total_rating, " +
+                    "total_rating_count, url, screenshots.url, videos.video_id, videos.name; " +
                     "limit $gameFetchNumber; offset $offset; sort id asc;"
         }
     }

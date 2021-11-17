@@ -2,10 +2,7 @@ package com.spitzer.igdbgames.repository.room.typeconverters
 
 import androidx.room.TypeConverter
 import com.google.gson.Gson
-import com.spitzer.igdbgames.repository.room.data.GameCoverRoomDto
-import com.spitzer.igdbgames.repository.room.data.GameGenreRoomDto
-import com.spitzer.igdbgames.repository.room.data.GamePlatformRoomDto
-import com.spitzer.igdbgames.repository.room.data.GameScreenshotRoomDto
+import com.spitzer.igdbgames.repository.room.data.*
 
 class GameTypeConverter {
 
@@ -96,6 +93,24 @@ class GameTypeConverter {
             listOf()
         } else {
             Gson().fromJson(value, Array<GameScreenshotRoomDto>::class.java).toList()
+        }
+    }
+
+    @TypeConverter
+    fun gameVideoListToJson(value: List<GameVideoRoomDto>?): String? {
+        return if (value == null) {
+            null
+        } else {
+            Gson().toJson(value)
+        }
+    }
+
+    @TypeConverter
+    fun jsonToGameVideoList(value: String?): List<GameVideoRoomDto> {
+        return if (value == null) {
+            listOf()
+        } else {
+            Gson().fromJson(value, Array<GameVideoRoomDto>::class.java).toList()
         }
     }
 }

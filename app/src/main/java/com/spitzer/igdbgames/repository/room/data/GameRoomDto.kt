@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import com.spitzer.igdbgames.repository.data.*
+import com.spitzer.igdbgames.repository.retrofit.data.parseToGame
 import kotlinx.parcelize.Parcelize
 
 @Entity(tableName = "games")
@@ -21,7 +22,8 @@ data class GameRoomDto(
     @field:SerializedName("first_release_date") val releaseDate: Long? = 0,
     @field:SerializedName("total_rating") val rating: Double? = 0.0,
     @field:SerializedName("total_rating_count") val ratingCount: Int? = 0,
-    @field:SerializedName("screenshots") val screenshots: List<GameScreenshotRoomDto>? = listOf()
+    @field:SerializedName("screenshots") val screenshots: List<GameScreenshotRoomDto>? = listOf(),
+    @field:SerializedName("videos") val videos: List<GameVideoRoomDto>? = listOf()
 ) : Parcelable
 
 fun GameRoomDto.parseToGame(): Game {
@@ -46,6 +48,7 @@ fun GameRoomDto.parseToGame(): Game {
         releaseDate = this.releaseDate,
         rating = this.rating,
         ratingCount = this.ratingCount,
-        screenshots = this.screenshots?.map { s -> GameScreenshot(s.id, s.url) }
+        screenshots = this.screenshots?.map { s -> GameScreenshot(s.id, s.url) },
+        videos = this.videos?.map { v -> GameVideo(v.id, v.name, v.videoId) }
     )
 }

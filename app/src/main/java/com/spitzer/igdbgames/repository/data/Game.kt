@@ -17,7 +17,8 @@ data class Game(
     val releaseDate: Long? = 0,
     val rating: Double? = 0.0,
     val ratingCount: Int? = 0,
-    val screenshots: List<GameScreenshot>? = listOf()
+    val screenshots: List<GameScreenshot>? = listOf(),
+    val videos: List<GameVideo>? = listOf()
 ) : Parcelable
 
 fun Game.getPlatformsNames(): String {

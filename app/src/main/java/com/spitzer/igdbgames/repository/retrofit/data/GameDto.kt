@@ -19,7 +19,8 @@ data class GameDto(
     @SerializedName("first_release_date") val releaseDate: Long? = 0,
     @SerializedName("total_rating") val rating: Double? = 0.0,
     @SerializedName("total_rating_count") val ratingCount: Int? = 0,
-    @SerializedName("screenshots") val screenshots: List<GameScreenshotDto>? = listOf()
+    @SerializedName("screenshots") val screenshots: List<GameScreenshotDto>? = listOf(),
+    @SerializedName("videos") val videos: List<GameVideoDto>? = listOf()
 ) : Parcelable
 
 fun GameDto.parseToGame(): Game {
@@ -44,7 +45,8 @@ fun GameDto.parseToGame(): Game {
         releaseDate = this.releaseDate,
         rating = this.rating,
         ratingCount = this.ratingCount,
-        screenshots = this.screenshots?.map { s -> GameScreenshot(s.id, s.url) }
+        screenshots = this.screenshots?.map { s -> GameScreenshot(s.id, s.url) },
+        videos = this.videos?.map { v -> GameVideo(v.id, v.name, v.videoId) }
     )
 }
 
@@ -70,6 +72,7 @@ fun GameDto.parseToGameRoomDto(): GameRoomDto {
         releaseDate = this.releaseDate,
         rating = this.rating,
         ratingCount = this.ratingCount,
-        screenshots = this.screenshots?.map { s -> GameScreenshotRoomDto(s.id, s.url) }
+        screenshots = this.screenshots?.map { s -> GameScreenshotRoomDto(s.id, s.url) },
+        videos = this.videos?.map { v -> GameVideoRoomDto(v.id, v.name, v.videoId) }
     )
 }
