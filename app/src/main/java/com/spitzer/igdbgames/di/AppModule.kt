@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import com.spitzer.igdbgames.core.network.ApiClient
 import com.spitzer.igdbgames.repository.retrofit.GamesRepository
-import com.spitzer.igdbgames.repository.retrofit.GamesRepositoryImpl
+import com.spitzer.igdbgames.repository.GamesRepositoryImpl
 import com.spitzer.igdbgames.repository.retrofit.GamesService
 import com.spitzer.igdbgames.repository.room.GameDatabase
 import dagger.Module

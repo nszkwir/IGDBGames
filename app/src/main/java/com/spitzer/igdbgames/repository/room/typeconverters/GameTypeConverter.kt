@@ -2,15 +2,15 @@ package com.spitzer.igdbgames.repository.room.typeconverters
 
 import androidx.room.TypeConverter
 import com.google.gson.Gson
-import com.spitzer.igdbgames.repository.data.GameCover
-import com.spitzer.igdbgames.repository.data.GameGenre
-import com.spitzer.igdbgames.repository.data.GamePlatform
-import com.spitzer.igdbgames.repository.data.GameScreenshot
+import com.spitzer.igdbgames.repository.room.data.GameCoverRoomDto
+import com.spitzer.igdbgames.repository.room.data.GameGenreRoomDto
+import com.spitzer.igdbgames.repository.room.data.GamePlatformRoomDto
+import com.spitzer.igdbgames.repository.room.data.GameScreenshotRoomDto
 
 class GameTypeConverter {
 
     @TypeConverter
-    fun gameCoverToJson(value: GameCover?): String? {
+    fun gameCoverToJson(value: GameCoverRoomDto?): String? {
         return if (value == null) {
             null
         } else {
@@ -19,16 +19,16 @@ class GameTypeConverter {
     }
 
     @TypeConverter
-    fun jsonToGameCover(value: String?): GameCover? {
+    fun jsonToGameCover(value: String?): GameCoverRoomDto? {
         return if (value == null) {
             null
         } else {
-            Gson().fromJson(value, GameCover::class.java)
+            Gson().fromJson(value, GameCoverRoomDto::class.java)
         }
     }
 
     @TypeConverter
-    fun gameCoverListToJson(value: List<GameCover>?): String? {
+    fun gameCoverListToJson(value: List<GameCoverRoomDto>?): String? {
         return if (value == null) {
             null
         } else {
@@ -37,16 +37,16 @@ class GameTypeConverter {
     }
 
     @TypeConverter
-    fun jsonToGameCoverList(value: String?): List<GameCover> {
+    fun jsonToGameCoverList(value: String?): List<GameCoverRoomDto> {
         return if (value == null) {
             listOf()
         } else {
-            Gson().fromJson(value, Array<GameCover>::class.java).toList()
+            Gson().fromJson(value, Array<GameCoverRoomDto>::class.java).toList()
         }
     }
 
     @TypeConverter
-    fun gameGenreListToJson(value: List<GameGenre>?): String? {
+    fun gameGenreListToJson(value: List<GameGenreRoomDto>?): String? {
         return if (value == null) {
             null
         } else {
@@ -55,16 +55,16 @@ class GameTypeConverter {
     }
 
     @TypeConverter
-    fun jsonToGameGenreList(value: String?): List<GameGenre> {
+    fun jsonToGameGenreList(value: String?): List<GameGenreRoomDto> {
         return if (value == null) {
             listOf()
         } else {
-            Gson().fromJson(value, Array<GameGenre>::class.java).toList()
+            Gson().fromJson(value, Array<GameGenreRoomDto>::class.java).toList()
         }
     }
 
     @TypeConverter
-    fun gamePlatformListToJson(value: List<GamePlatform>?): String? {
+    fun gamePlatformListToJson(value: List<GamePlatformRoomDto>?): String? {
         return if (value == null) {
             null
         } else {
@@ -73,16 +73,16 @@ class GameTypeConverter {
     }
 
     @TypeConverter
-    fun jsonToGamePlatformList(value: String?): List<GamePlatform> {
+    fun jsonToGamePlatformList(value: String?): List<GamePlatformRoomDto> {
         return if (value == null) {
             listOf()
         } else {
-            Gson().fromJson(value, Array<GamePlatform>::class.java).toList()
+            Gson().fromJson(value, Array<GamePlatformRoomDto>::class.java).toList()
         }
     }
 
     @TypeConverter
-    fun gameScreenshotListToJson(value: List<GameScreenshot>?): String? {
+    fun gameScreenshotListToJson(value: List<GameScreenshotRoomDto>?): String? {
         return if (value == null) {
             null
         } else {
@@ -91,11 +91,11 @@ class GameTypeConverter {
     }
 
     @TypeConverter
-    fun jsonToGameScreenshotList(value: String?): List<GameScreenshot> {
+    fun jsonToGameScreenshotList(value: String?): List<GameScreenshotRoomDto> {
         return if (value == null) {
             listOf()
         } else {
-            Gson().fromJson(value, Array<GameScreenshot>::class.java).toList()
+            Gson().fromJson(value, Array<GameScreenshotRoomDto>::class.java).toList()
         }
     }
 }

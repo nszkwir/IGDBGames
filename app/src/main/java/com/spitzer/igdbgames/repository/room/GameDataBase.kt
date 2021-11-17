@@ -3,11 +3,11 @@ package com.spitzer.igdbgames.repository.room
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.spitzer.igdbgames.repository.data.Game
+import com.spitzer.igdbgames.repository.room.data.GameRoomDto
 import com.spitzer.igdbgames.repository.room.typeconverters.GameTypeConverter
 
 @Database(
-    entities = [Game::class],
+    entities = [GameRoomDto::class],
     version = 1,
     exportSchema = false
 )

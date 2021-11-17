@@ -1,27 +1,23 @@
 package com.spitzer.igdbgames.repository.data
 
 import android.os.Parcelable
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import java.time.format.DateTimeFormatter
 
-@Entity(tableName = "games")
 @Parcelize
 data class Game(
-    @PrimaryKey @field:SerializedName("id") val id: Int,
-    @field:SerializedName("cover") val cover: GameCover? = GameCover(-1, ""),
-    @field:SerializedName("genres") val genres: List<GameGenre>? = listOf(),
-    @field:SerializedName("name") val name: String? = "",
-    @field:SerializedName("platforms") val platforms: List<GamePlatform>? = listOf(),
-    @field:SerializedName("storyline") val storyline: String? = "",
-    @field:SerializedName("summary") val summary: String? = "",
-    @field:SerializedName("url") val url: String? = "",
-    @field:SerializedName("first_release_date") val releaseDate: Long? = 0,
-    @field:SerializedName("total_rating") val rating: Double? = 0.0,
-    @field:SerializedName("total_rating_count") val ratingCount: Int? = 0,
-    @field:SerializedName("screenshots") val screenshots: List<GameScreenshot>? = listOf()
+    val id: Int,
+    val cover: GameCover? = GameCover(-1, ""),
+    val genres: List<GameGenre>? = listOf(),
+    val name: String? = "",
+    val platforms: List<GamePlatform>? = listOf(),
+    val storyline: String? = "",
+    val summary: String? = "",
+    val url: String? = "",
+    val releaseDate: Long? = 0,
+    val rating: Double? = 0.0,
+    val ratingCount: Int? = 0,
+    val screenshots: List<GameScreenshot>? = listOf()
 ) : Parcelable
 
 fun Game.getPlatformsNames(): String {

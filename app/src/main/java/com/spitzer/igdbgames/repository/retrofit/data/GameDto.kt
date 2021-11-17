@@ -2,8 +2,9 @@ package com.spitzer.igdbgames.repository.retrofit.data
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import com.spitzer.igdbgames.repository.data.*
+import com.spitzer.igdbgames.repository.room.data.*
 import kotlinx.parcelize.Parcelize
-import java.time.format.DateTimeFormatter
 
 @Parcelize
 data class GameDto(
@@ -21,21 +22,54 @@ data class GameDto(
     @SerializedName("screenshots") val screenshots: List<GameScreenshotDto>? = listOf()
 ) : Parcelable
 
-fun GameDto.getPlatformsNames(): String {
-    var stringResult = ""
-    if (this.platforms != null && this.platforms.isNotEmpty()) {
-        stringResult = this.platforms[0].name
-        if (this.platforms.size > 1) {
-            for (i in 1 until this.platforms.size) {
-                stringResult += ", ${this.platforms[i].name}"
-            }
-        }
-    }
-    return stringResult
+fun GameDto.parseToGame(): Game {
+    return Game(
+        id = this.id,
+        cover = GameCover(this.cover?.id ?: 0, this.cover?.url ?: ""),
+        genres = this.genres?.map { g -> GameGenre(g.id, g.name) },
+        name = this.name,
+        platforms = this.platforms?.map { p ->
+            GamePlatform(
+                p.id,
+                p.name,
+                GamePlatformLogo(
+                    p.platform_logo?.id ?: 0,
+                    p.platform_logo?.url ?: ""
+                )
+            )
+        },
+        storyline = this.storyline,
+        summary = this.summary,
+        url = this.url,
+        releaseDate = this.releaseDate,
+        rating = this.rating,
+        ratingCount = this.ratingCount,
+        screenshots = this.screenshots?.map { s -> GameScreenshot(s.id, s.url) }
+    )
 }
 
-fun GameDto.getReleaseDate(): String {
-    val dateFromTimeStamp = DateTimeFormatter.ISO_INSTANT
-        .format(java.time.Instant.ofEpochSecond(this.releaseDate ?: 0))
-    return dateFromTimeStamp.subSequence(0, 4).toString()
+fun GameDto.parseToGameRoomDto(): GameRoomDto {
+    return GameRoomDto(
+        id = this.id,
+        cover = GameCoverRoomDto(this.cover?.id ?: 0, this.cover?.url ?: ""),
+        genres = this.genres?.map { g -> GameGenreRoomDto(g.id, g.name) },
+        name = this.name,
+        platforms = this.platforms?.map { p ->
+            GamePlatformRoomDto(
+                p.id,
+                p.name,
+                GamePlatformLogoRoomDto(
+                    p.platform_logo?.id ?: 0,
+                    p.platform_logo?.url ?: ""
+                )
+            )
+        },
+        storyline = this.storyline,
+        summary = this.summary,
+        url = this.url,
+        releaseDate = this.releaseDate,
+        rating = this.rating,
+        ratingCount = this.ratingCount,
+        screenshots = this.screenshots?.map { s -> GameScreenshotRoomDto(s.id, s.url) }
+    )
 }
