@@ -21,7 +21,6 @@ class MainFragment : BaseFragment() {
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
 
-    //    private lateinit var pagingAdapter: GameListPagingAdapter
     private lateinit var paginationAdapter: GamesPaginationAdapter
 
     private val viewModel: MainViewModel by viewModels()
@@ -39,14 +38,15 @@ class MainFragment : BaseFragment() {
         return binding.root
     }
 
+    // Observing viewModels STATES
     private fun defineObservables() {
-        // Observing viewModels STATES
+
         viewModel.gamesAddedState.observe(viewLifecycleOwner, {
             it.getContentIfNotHandled()?.let { gamesAdded ->
                 if (gamesAdded) {
                     paginationAdapter.apply {
                         removeLoadingFooter()
-                        viewModel.isLoadingGames = false
+                        viewModel.isLoadingNextPage = false
                         addAll(viewModel.addedGames.value!!)
                     }
                 } else {
@@ -62,6 +62,8 @@ class MainFragment : BaseFragment() {
                     paginationAdapter.apply {
                         setGameList(viewModel.loadedGames.value!!)
                     }
+                } else {
+                    paginationAdapter.removeLoadingFooter()
                 }
             }
         })
@@ -76,7 +78,7 @@ class MainFragment : BaseFragment() {
     private fun setupView() {
 
         binding.swipeContainer.setOnRefreshListener {
-            viewModel.reloadGames()
+            viewModel.refreshGamesList()
         }
 
         binding.swipeContainer.setColorSchemeResources(
@@ -111,7 +113,7 @@ class MainFragment : BaseFragment() {
                     layoutManager = linearLayoutManager,
                     loadNextPageFunction = { loadNextPage() },
                     isLastPageFunction = { viewModel.lastPageReached },
-                    isLoadingFunction = { viewModel.isLoadingGames }
+                    isLoadingFunction = { viewModel.isLoadingNextPage }
                     )
             )
         }
@@ -120,7 +122,7 @@ class MainFragment : BaseFragment() {
 
     private fun loadNextPage() {
         paginationAdapter.addLoadingFooter()
-        viewModel.loadNextPage()
+        viewModel.fetchNextPage()
     }
 
     private fun onGameClicked(game: Game) {

@@ -7,7 +7,6 @@ import com.spitzer.igdbgames.R
 import com.spitzer.igdbgames.core.BaseViewModel
 import com.spitzer.igdbgames.core.Event
 import com.spitzer.igdbgames.core.NavigationCommand
-import com.spitzer.igdbgames.core.network.ResultData
 import com.spitzer.igdbgames.repository.data.Game
 import com.spitzer.igdbgames.repository.retrofit.GamesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,13 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-//    private val database: GameDatabase,
     private val repository: GamesRepository
 ) : BaseViewModel() {
-
-    companion object {
-        private const val GAME_FETCH_NUMBER = 50
-    }
 
     // STATES observed by the UI
     private val _gamesAddedState = MutableLiveData<Event<Boolean>>()
@@ -36,92 +30,93 @@ class MainViewModel @Inject constructor(
     // ----------
 
     var lastPageReached = false
-    var isLoadingGames = false
+    var isLoadingNextPage = false
     private var actualPage = 1
 
-    private val _addedGames =  MutableLiveData<ArrayList<Game>>()
+    private val _addedGames = MutableLiveData<ArrayList<Game>>()
     val addedGames: LiveData<ArrayList<Game>> = _addedGames
-    private val _loadedGames =  MutableLiveData<ArrayList<Game>>()
+    private val _loadedGames = MutableLiveData<ArrayList<Game>>()
     val loadedGames: LiveData<ArrayList<Game>> = _loadedGames
 
     init {
-        setLoading(true)
-        loadGames()
+        loadInitialGamesList()
     }
 
-    fun setLoading(isLoading: Boolean) {
+    private fun setLoading(isLoading: Boolean) {
         _loading.postValue(Event(isLoading))
-        isLoadingGames = isLoading
+        isLoadingNextPage = isLoading
     }
 
-    fun reloadGames() {
+    // USES CASES
+    // 1- Initial loading
+    private fun loadInitialGamesList() {
         setLoading(true)
         actualPage = 1
-        loadGames()
+        loadGamesList()
     }
 
-    fun loadGames() = viewModelScope.launch {
-
-        val result = repository.getGames(actualPage, GAME_FETCH_NUMBER)
-
-        when (result) {
-            is ResultData.Success -> {
-                setLoading(false)
-                if (result.data != null) {
-                    _loadedGames.value = result.data!!
-                    actualPage++
-                    _gamesLoadingState.value = Event(true)
-                } else {
-                    _snackbarError.value = Event(R.string.snackbar_could_not_fetch)
-                    _gamesLoadingState.value = Event(false)
-                }
-            }
-            is ResultData.Error -> {
-                setLoading(false)
-                if (result.isNetworkError()) {
-                    _snackbarError.value = Event(R.string.snackbar_network_error)
-                } else {
-                    _snackbarError.value = Event(R.string.snackbar_error)
-                }
-                _gamesLoadingState.value = Event(false)
-            }
-        }
+    // 2- Refresh from swipeDown behaviour
+    fun refreshGamesList() {
+        setLoading(true)
+        actualPage = 1
+        loadGamesList()
     }
 
-    fun loadNextPage() = viewModelScope.launch {
-        isLoadingGames = true
-
-        val result = repository.getGames(actualPage, GAME_FETCH_NUMBER)
-
-        when (result) {
-            is ResultData.Success -> {
-                if (result.data != null) {
-                    _addedGames.value = result.data!!
-                    _loadedGames.value?.addAll(result.data!!)
-                    actualPage++
-                    _gamesAddedState.value = Event(true)
-
-                } else {
-                    _snackbarError.value = Event(R.string.snackbar_could_not_fetch)
-                    _gamesAddedState.value = Event(false)
-                }
-            }
-            is ResultData.Error -> {
-                if (result.isNetworkError()) {
-                    _snackbarError.value = Event(R.string.snackbar_network_error)
-                } else {
-                    _snackbarError.value = Event(R.string.snackbar_error)
-                }
-                _gamesAddedState.value = Event(false)
-            }
-        }
+    // 2- Fetching next page when reaching the end of list
+    fun fetchNextPage() {
+        loadNextPage()
     }
 
+    // 10 - Clicked on a game
     fun onGameClicked(gameClicked: Game) {
         val action = MainFragmentDirections
             .actionMainFragmentToGameDetailsFragment(
                 gameClicked
             )
-        _navigation.value = Event(NavigationCommand.To(action))
+        _navigation.postValue(Event(NavigationCommand.To(action)))
+    }
+
+    private fun loadGamesList() = viewModelScope.launch {
+        repository.loadRefreshGames(
+            successFromNetwork = { isLastPage, gameList ->
+                actualPage++
+                _loadedGames.postValue(gameList)
+                _lastPageReachedState.postValue(Event(isLastPage))
+                _gamesLoadingState.postValue(Event(true))
+            },
+            successFromDatabase = { gameList ->
+                _loadedGames.postValue(gameList)
+                _lastPageReachedState.postValue(Event(true))
+                _gamesLoadingState.postValue(Event(true))
+            },
+            error = {
+                _snackbarError.postValue(Event(R.string.snackbar_could_not_fetch))
+                _gamesLoadingState.postValue(Event(false))
+            }
+        )
+        setLoading(false)
+    }
+
+    private fun loadNextPage() = viewModelScope.launch {
+        isLoadingNextPage = true
+        repository.loadNextPage(
+            actualPage,
+            successFromNetwork = { isLastPage, gameList ->
+                actualPage++
+                _addedGames.postValue(gameList)
+                _loadedGames.value?.addAll(gameList)
+                _lastPageReachedState.postValue(Event(isLastPage))
+                _gamesAddedState.postValue(Event(true))
+            },
+            successFromDatabase = { gameList ->
+                _loadedGames.postValue(gameList)
+                _lastPageReachedState.postValue(Event(true))
+                _gamesLoadingState.postValue(Event(true))
+            },
+            error = {
+                _snackbarError.postValue(Event(R.string.snackbar_could_not_fetch))
+                _gamesLoadingState.postValue(Event(false))
+            }
+        )
     }
 }
