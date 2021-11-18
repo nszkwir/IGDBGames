@@ -21,63 +21,10 @@ class GamesRepositoryImpl @Inject constructor(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : GamesRepository {
 
-    override suspend fun loadRefreshGames(
-        successFromNetwork: (Boolean, ArrayList<Game>) -> Unit,
-        successFromDatabase: (ArrayList<Game>) -> Unit,
-        error: () -> Unit
-    ) {
-        withContext(dispatcher) {
-            val result = safeCall {
-                service.getGames(
-                    getGamesQuery(1)
-                )
-            }
-            when (result) {
-                is ResultData.Success -> {
-                    val resultFromNetwork: ArrayList<Game> = result.data?.map {
-                        it.parseToGame()
-                    } as ArrayList<Game>
-                    result.data.let {
-                        dataBase.gamesDao().insertAll(
-                            result.data.map {
-                                it.parseToGameRoomDto()
-                            }
-                        )
-                    }
-                    successFromNetwork(
-                        (resultFromNetwork.size < GAME_FETCH_NUMBER || resultFromNetwork.isEmpty()),
-                        resultFromNetwork
-                    )
-                }
-                is ResultData.Error -> {
-                    val dbResults = localSafeCall {
-                        dataBase.gamesDao().allGames()
-                    }
-                    when (dbResults) {
-
-                        is RoomResultData.Success -> {
-                            val resultFromDatabase: ArrayList<Game> = dbResults.data?.map {
-                                it.parseToGame()
-                            } as ArrayList<Game>
-
-                            successFromDatabase(resultFromDatabase)
-                        }
-                        is RoomResultData.Error -> {
-                            error()
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     override suspend fun loadNextPage(
-        currentPage: Int,
-        successFromNetwork: (Boolean, ArrayList<Game>) -> Unit,
-        successFromDatabase: (ArrayList<Game>) -> Unit,
-        error: () -> Unit
-    ) {
-        withContext(dispatcher) {
+        currentPage: Int
+    ): RepositoryResultData<ArrayList<Game>> {
+        return withContext(dispatcher) {
             val result = safeCall {
                 service.getGames(
                     getGamesQuery(currentPage)
@@ -95,9 +42,9 @@ class GamesRepositoryImpl @Inject constructor(
                             }
                         )
                     }
-                    successFromNetwork(
-                        (resultFromNetwork.size < GAME_FETCH_NUMBER || resultFromNetwork.isEmpty()),
-                        resultFromNetwork
+                    return@withContext RepositoryResultData.SuccessFromNetwork(
+                        resultFromNetwork,
+                        (resultFromNetwork.size < GAME_FETCH_NUMBER || resultFromNetwork.isEmpty())
                     )
                 }
                 is ResultData.Error -> {
@@ -111,10 +58,15 @@ class GamesRepositoryImpl @Inject constructor(
                                 it.parseToGame()
                             } as ArrayList<Game>
 
-                            successFromDatabase(resultFromDatabase)
+                            return@withContext RepositoryResultData.SuccessFromDataBase(
+                                resultFromDatabase
+                            )
                         }
                         is RoomResultData.Error -> {
-                            error()
+                            return@withContext RepositoryResultData.Error(
+                                dbResults.failure.message ?: "",
+                                ROOM_RESULT_DATA_ERROR_CODE
+                            )
                         }
                     }
                 }
@@ -125,6 +77,7 @@ class GamesRepositoryImpl @Inject constructor(
     companion object {
 
         private const val GAME_FETCH_NUMBER = 50
+        private const val ROOM_RESULT_DATA_ERROR_CODE = 777
 
         fun getGamesQuery(currentPage: Int, gameFetchNumber: Int = GAME_FETCH_NUMBER): String {
             val offset = (currentPage - 1) * gameFetchNumber

@@ -8,17 +8,17 @@ import com.spitzer.igdbgames.core.BaseViewModel
 import com.spitzer.igdbgames.core.Event
 import com.spitzer.igdbgames.core.NavigationCommand
 import com.spitzer.igdbgames.repository.data.Game
-import com.spitzer.igdbgames.repository.GamesRepository
+import com.spitzer.igdbgames.ui.pagination.PaginationResult
+import com.spitzer.igdbgames.ui.pagination.PaginationUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val repository: GamesRepository
+    private val paginationUseCases: PaginationUseCases
 ) : BaseViewModel() {
 
-    // STATES observed by the UI
     private val _gamesAddedState = MutableLiveData<Event<Boolean>>()
     val gamesAddedState: LiveData<Event<Boolean>> = _gamesAddedState
 
@@ -27,7 +27,6 @@ class MainViewModel @Inject constructor(
 
     private val _lastPageReachedState = MutableLiveData<Event<Boolean>>()
     val lastPageReachedState: LiveData<Event<Boolean>> = _lastPageReachedState
-    // ----------
 
     var lastPageReached = false
     var isLoadingNextPage = false
@@ -42,32 +41,14 @@ class MainViewModel @Inject constructor(
         loadInitialGamesList()
     }
 
-    private fun setLoading(isLoading: Boolean) {
-        _loading.postValue(Event(isLoading))
-        isLoadingNextPage = isLoading
-    }
-
-    // USES CASES
-    // 1- Initial loading
-    private fun loadInitialGamesList() {
-        setLoading(true)
-        actualPage = 1
-        loadGamesList()
-    }
-
-    // 2- Refresh from swipeDown behaviour
     fun refreshGamesList() {
-        setLoading(true)
-        actualPage = 1
-        loadGamesList()
+        loadInitialGamesList()
     }
 
-    // 2- Fetching next page when reaching the end of list
     fun fetchNextPage() {
         loadNextPage()
     }
 
-    // 10 - Clicked on a game
     fun onGameClicked(gameClicked: Game) {
         val action = MainFragmentDirections
             .actionMainFragmentToGameDetailsFragment(
@@ -76,47 +57,55 @@ class MainViewModel @Inject constructor(
         _navigation.postValue(Event(NavigationCommand.To(action)))
     }
 
-    private fun loadGamesList() = viewModelScope.launch {
-        repository.loadRefreshGames(
-            successFromNetwork = { isLastPage, gameList ->
+    private fun loadInitialGamesList() = viewModelScope.launch {
+        actualPage = 1
+        setLoading(true)
+        val paginationResult = paginationUseCases.fetchNextPage(actualPage)
+        when (paginationResult) {
+            is PaginationResult.Success -> {
                 actualPage++
-                _loadedGames.postValue(gameList)
-                _lastPageReachedState.postValue(Event(isLastPage))
-                _gamesLoadingState.postValue(Event(true))
-            },
-            successFromDatabase = { gameList ->
-                _loadedGames.postValue(gameList)
-                _lastPageReachedState.postValue(Event(true))
-                _gamesLoadingState.postValue(Event(true))
-            },
-            error = {
+                if (paginationResult.data.isNotEmpty()) {
+                    _loadedGames.postValue(paginationResult.data!!)
+                    _gamesLoadingState.postValue(Event(true))
+                }
+                _lastPageReachedState.postValue(Event(paginationResult.paginationInfo.isLastPage))
+            }
+            is PaginationResult.Error -> {
                 _snackbarError.postValue(Event(R.string.snackbar_could_not_fetch))
                 _gamesLoadingState.postValue(Event(false))
             }
-        )
+        }
         setLoading(false)
     }
 
     private fun loadNextPage() = viewModelScope.launch {
         isLoadingNextPage = true
-        repository.loadNextPage(
-            actualPage,
-            successFromNetwork = { isLastPage, gameList ->
+        val paginationResult = paginationUseCases.fetchNextPage(actualPage)
+        when (paginationResult) {
+            is PaginationResult.Success -> {
                 actualPage++
-                _addedGames.postValue(gameList)
-                _loadedGames.value?.addAll(gameList)
-                _lastPageReachedState.postValue(Event(isLastPage))
-                _gamesAddedState.postValue(Event(true))
-            },
-            successFromDatabase = { gameList ->
-                _loadedGames.postValue(gameList)
-                _lastPageReachedState.postValue(Event(true))
-                _gamesLoadingState.postValue(Event(true))
-            },
-            error = {
+                if (paginationResult.data.isNotEmpty()) {
+                    if (paginationResult.paginationInfo.isFullDataRetrieved) {
+                        _loadedGames.postValue(paginationResult.data!!)
+                        _gamesLoadingState.postValue(Event(true))
+                    } else {
+                        _addedGames.postValue(paginationResult.data!!)
+                        _loadedGames.value?.addAll(paginationResult.data!!)
+                        _gamesAddedState.postValue(Event(true))
+                    }
+                }
+                _lastPageReachedState.postValue(Event(paginationResult.paginationInfo.isLastPage))
+            }
+            is PaginationResult.Error -> {
                 _snackbarError.postValue(Event(R.string.snackbar_could_not_fetch))
                 _gamesLoadingState.postValue(Event(false))
             }
-        )
+        }
+
+    }
+
+    private fun setLoading(isLoading: Boolean) {
+        _loading.postValue(Event(isLoading))
+        isLoadingNextPage = isLoading
     }
 }

@@ -9,6 +9,7 @@ import com.spitzer.igdbgames.repository.GamesRepository
 import com.spitzer.igdbgames.repository.GamesRepositoryImpl
 import com.spitzer.igdbgames.repository.retrofit.GamesService
 import com.spitzer.igdbgames.repository.room.GameDatabase
+import com.spitzer.igdbgames.ui.pagination.PaginationUseCases
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,6 +19,8 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    // Repositories
     @Provides
     @Singleton
     fun provideGameRepository(
@@ -32,6 +35,14 @@ object AppModule {
         database: GameDatabase
     ): GameDetailsRepository =
         GamesDetailsRepositoryImpl(database)
+
+    // Use cases
+    @Provides
+    @Singleton
+    fun providePaginationUseCases(
+        repository: GamesRepository
+    ): PaginationUseCases =
+        PaginationUseCases(repository)
 
     @Provides
     @Singleton
