@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
@@ -16,6 +17,7 @@ import com.spitzer.igdbgames.core.BaseFragment
 import com.spitzer.igdbgames.databinding.GameDetailsFragmentBinding
 import com.spitzer.igdbgames.extensions.formatCoverImageUrl
 import com.spitzer.igdbgames.extensions.formatScreenshotBackgroundImageUrl
+import com.spitzer.igdbgames.extensions.round
 import com.spitzer.igdbgames.extensions.setStarsProgressColor
 import com.spitzer.igdbgames.repository.data.getPlatformsNames
 import com.spitzer.igdbgames.repository.data.getReleaseDate
@@ -50,12 +52,32 @@ class GameDetailsFragment : BaseFragment() {
     }
 
     private fun defineObservables() {
-        viewModel.viewLoaded.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let { isLoaded ->
-                if (isLoaded) {
+        viewModel.dataLoaded.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let { isDataLoaded ->
+                if (isDataLoaded) {
                     setupView()
+                } else {
+                    //TODO show error layout or message
                 }
                 viewModel.setLoading(false)
+            }
+        })
+
+        viewModel.localRatingUpdated.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let { localRatingUpdated ->
+                if (localRatingUpdated) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Rating updated locally",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        "Could not save rating locally",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         })
     }
@@ -81,7 +103,10 @@ class GameDetailsFragment : BaseFragment() {
             videosAdapter = VideosAdapter(
                 this.videos!!,
                 AppCompatResources.getDrawable(requireContext(), R.drawable.ic_no_image_24)!!,
-                AppCompatResources.getDrawable(requireContext(), R.drawable.ic_baseline_play_circle_filled_12)!!
+                AppCompatResources.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_baseline_play_circle_filled_12
+                )!!
             ) { gameVideo ->
                 viewModel.navigateToVideoFragment(gameVideo)
             }
@@ -105,6 +130,7 @@ class GameDetailsFragment : BaseFragment() {
                 resources.getColor(R.color.IGDBsoftGray)
             )
             binding.ratingBar.progressDrawable = stars
+            binding.ratingBar.rating = this.rating?.toFloat() ?: 0.0f
 
             try {
                 Picasso.get()
@@ -137,6 +163,41 @@ class GameDetailsFragment : BaseFragment() {
             }
         }
 
+
+        val stars = binding.myRatingBar.progressDrawable as LayerDrawable
+        stars.setStarsProgressColor(
+            resources.getColor(R.color.myRatingBarColor),
+            resources.getColor(R.color.IGDBsoftGray)
+        )
+        binding.myRatingBar.progressDrawable = stars
+
+        if (viewModel.rating.value != null) {
+            binding.myRatingText.text = "My rating: ${viewModel.rating.value!!.rating?.round(2)}"
+            binding.myRatingBar.rating = viewModel.rating.value!!.rating?.toFloat() ?: 0.0f
+            binding.myRatingBar.visibility = View.VISIBLE
+        } else {
+            binding.myRatingText.text = "Click to rate this game!"
+            binding.myRatingBar.visibility = View.GONE
+        }
+
+        binding.myRatingLayout.setOnClickListener {
+            val dialog = RatingDialog(
+                viewModel.rating.value?.rating?.toFloat()?:null
+            ) { newRatingValue ->
+                onRatingSet(newRatingValue)
+            }
+            dialog.show(parentFragmentManager, "Game Rating")
+        }
+
+    }
+
+    private fun onRatingSet(newRatingValue: Float?) {
+        if (newRatingValue != null) {
+            binding.myRatingBar.rating = newRatingValue
+            binding.myRatingText.text = "My rating: ${newRatingValue.round(2)}"
+            binding.myRatingBar.visibility = View.VISIBLE
+            viewModel.updateLocalRating(newRatingValue)
+        }
     }
 
     override fun onDestroyView() {

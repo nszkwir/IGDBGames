@@ -25,8 +25,11 @@ class GameDetailsViewModel @Inject constructor(
     private val _rating = MutableLiveData<LocalRating>()
     val rating: LiveData<LocalRating> = _rating
 
-    private val _viewLoaded = MutableLiveData<Event<Boolean>>()
-    val viewLoaded: LiveData<Event<Boolean>> = _viewLoaded
+    private val _dataLoaded = MutableLiveData<Event<Boolean>>()
+    val dataLoaded: LiveData<Event<Boolean>> = _dataLoaded
+
+    private val _localRatingUpdated = MutableLiveData<Event<Boolean>>()
+    val localRatingUpdated: LiveData<Event<Boolean>> = _localRatingUpdated
 
     // USES CASES
     // 1- Load model data from Database
@@ -41,11 +44,30 @@ class GameDetailsViewModel @Inject constructor(
             successFromDatabase = { game, rating ->
                 _game.postValue(game)
                 _rating.postValue(rating)
-                _viewLoaded.postValue(Event(true))
+                _dataLoaded.postValue(Event(true))
             },
             error = {
-                _viewLoaded.postValue(Event(false))
+                _dataLoaded.postValue(Event(false))
             })
+    }
+
+    fun updateLocalRating(newRatingValue: Float) = viewModelScope.launch {
+        game.value?.id?.let {
+            _rating.postValue(LocalRating(game.value!!.id!!, newRatingValue.toDouble()))
+            repository.udpateLocalRating(
+                gameId = game.value!!.id,
+                localRating = newRatingValue.toDouble(),
+                success = {
+                    _localRatingUpdated.postValue(Event(true))
+                },
+                error = {
+                    _localRatingUpdated.postValue(Event(false))
+                }
+            )
+
+        } ?: run {
+            _localRatingUpdated.postValue(Event(false))
+        }
     }
 
     fun setLoading(isLoading: Boolean) {
