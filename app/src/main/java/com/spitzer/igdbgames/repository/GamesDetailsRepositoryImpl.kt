@@ -2,9 +2,11 @@ package com.spitzer.igdbgames.repository
 
 import com.spitzer.igdbgames.core.room.RoomResultData
 import com.spitzer.igdbgames.core.room.localSafeCall
+import com.spitzer.igdbgames.core.room.localSafeInsert
 import com.spitzer.igdbgames.repository.data.Game
 import com.spitzer.igdbgames.repository.data.LocalRating
 import com.spitzer.igdbgames.repository.room.GameDatabase
+import com.spitzer.igdbgames.repository.room.data.LocalRatingRoomDto
 import com.spitzer.igdbgames.repository.room.data.parseToGame
 import com.spitzer.igdbgames.repository.room.data.parseToLocalRating
 import kotlinx.coroutines.CoroutineDispatcher
@@ -42,6 +44,29 @@ class GamesDetailsRepositoryImpl @Inject constructor(
                             successFromDatabase(gameFromDatabase, null)
                         }
                     }
+                }
+                is RoomResultData.Error -> {
+                    error()
+                }
+            }
+        }
+    }
+
+    override suspend fun udpateLocalRating(
+        gameId: Int,
+        localRating: Double,
+        success: () -> Unit,
+        error: () -> Unit
+    ) {
+        withContext(dispatcher) {
+            val savedData = localSafeInsert {
+                dataBase.localRatingDao().insert(
+                    LocalRatingRoomDto(gameId, localRating)
+                )
+            }
+            when (savedData) {
+                is RoomResultData.Success -> {
+                    success()
                 }
                 is RoomResultData.Error -> {
                     error()

@@ -9,3 +9,12 @@ internal suspend fun <T> localSafeCall(call: suspend () -> T): RoomResultData<T?
         RoomResultData.Error(e)
     }
 }
+
+internal suspend fun <T> localSafeInsert(call: suspend () -> T): RoomResultData<T?> {
+    return try {
+        val data = call.invoke()
+        RoomResultData.Success(data)
+    } catch (e: Exception) {
+        RoomResultData.Error(e)
+    }
+}

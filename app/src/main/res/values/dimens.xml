@@ -34,6 +34,7 @@
     <dimen name="game_detail_link_maginend">20dp</dimen>
     <dimen name="game_detail_link_padding">10dp</dimen>
     <dimen name="game_detail_date_size">12sp</dimen>
+    <dimen name="game_detail_my_rating_size">18sp</dimen>
     <dimen name="game_detail_verticalseparator_width">2dp</dimen>
     <dimen name="game_detail_verticalseparator_height">10dp</dimen>
     <dimen name="game_detail_verticalseparator_marginstart">5dp</dimen>
