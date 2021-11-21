@@ -106,6 +106,44 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerBackground" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/myRatingLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginStart="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/horizontalSeparator">
+
+        <TextView
+            android:id="@+id/myRatingText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textColor="@color/IGDBtextSoftGray"
+            android:textSize="@dimen/game_detail_my_rating_size"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="My rating: 2.0" />
+
+        <RatingBar
+            android:id="@+id/myRatingBar"
+            style="?android:attr/ratingBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:isIndicator="true"
+            android:numStars="5"
+            android:progressTint="@color/myRatingBarColor"
+            android:rating="2.0"
+            android:stepSize="0.1"
+            app:layout_constraintBottom_toBottomOf="@+id/myRatingText"
+            app:layout_constraintStart_toEndOf="@+id/myRatingText"
+            app:layout_constraintTop_toTopOf="@+id/myRatingText" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -113,7 +151,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/horizontalSeparator">
+        app:layout_constraintTop_toBottomOf="@+id/myRatingLayout">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

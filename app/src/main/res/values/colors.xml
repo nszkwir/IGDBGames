@@ -16,5 +16,6 @@
     <color name="IGDBtextSoftGray">#FF898F99</color>
     <color name="backgroundViolet">#FF9763F8</color>
     <color name="snackbarColor">#FF672EF5</color>
+    <color name="myRatingBarColor">#FF03DAC5</color>
 
 </resources>
