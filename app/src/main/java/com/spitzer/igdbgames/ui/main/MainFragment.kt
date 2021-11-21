@@ -37,39 +37,52 @@ class MainFragment : BaseFragment() {
         return binding.root
     }
 
-    // Observing viewModels STATES
     private fun defineObservables() {
 
-        viewModel.gamesAddedState.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let { gamesAdded ->
-                if (gamesAdded) {
-                    paginationAdapter.apply {
-                        removeLoadingFooter()
-                        viewModel.isLoadingNextPage = false
-                        addAll(viewModel.addedGames.value!!)
-                    }
-                } else {
-                    paginationAdapter.showErrorLoading()
-                }
-            }
-        })
+        viewModel.paginationViewState.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let { viewState ->
 
-        viewModel.gamesLoadingState.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let { gamesRefreshed ->
-                finishRefreshing()
-                if (gamesRefreshed) {
-                    paginationAdapter.apply {
-                        setGameList(viewModel.loadedGames.value!!)
-                    }
-                } else {
-                    paginationAdapter.removeLoadingFooter()
-                }
-            }
-        })
+                when (viewState) {
 
-        viewModel.lastPageReachedState.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let { isLastPage ->
-                viewModel.lastPageReached = isLastPage
+                    is MainViewState.LoadingInitialGameList -> {
+                        if (viewState.isSuccess) {
+                            paginationAdapter.setGameList(viewModel.gamesList.value!!)
+                        } else {
+                            // TODO load layout showing error
+                        }
+                    }
+
+                    is MainViewState.RefreshingGameList -> {
+                        finishRefreshing()
+                        if (viewState.isSuccess) {
+                            paginationAdapter.setGameList(viewModel.gamesList.value!!)
+                        } else {
+                            // TODO
+                        }
+                    }
+
+                    is MainViewState.AddNextGamePageToList -> {
+                        if (viewState.isSuccess) {
+                            paginationAdapter.apply {
+                                paginationAdapter.notifyGamesInserted(
+                                    viewState.startingPosition,
+                                    viewState.gamesAmountAdded
+                                )
+                                viewModel.nextPageLoaded()
+                                hideFooter()
+                            }
+                        } else {
+                            // TODO errorLoading on the footer view not in adapter
+                            // showFooterError()
+                        }
+                    }
+
+                    is MainViewState.AddedAllGamesFromDb -> {
+                        paginationAdapter.setGameList(viewModel.gamesList.value!!)
+                        viewModel.nextPageLoaded()
+                        hideFooter()
+                    }
+                }
             }
         })
     }
@@ -77,7 +90,8 @@ class MainFragment : BaseFragment() {
     private fun setupView() {
 
         binding.swipeContainer.setOnRefreshListener {
-            viewModel.refreshGamesList()
+            hideFooter()
+            viewModel.processViewEvent(MainViewEvent.PaginationEvent.RefreshGameListEvent())
         }
 
         binding.swipeContainer.setColorSchemeResources(
@@ -101,9 +115,10 @@ class MainFragment : BaseFragment() {
                 requireContext(),
                 R.drawable.ic_no_image_24
             )!!,
-            retryFunction = { Unit },
-            onFinishRefresh = { Unit }
+            retryFunction = { Unit }, // TODO feature to implement
+            onFinishRefresh = { Unit } // TODO features to implement
         )
+
         binding.gameListRecyclerView.apply {
             layoutManager = linearLayoutManager
             adapter = paginationAdapter
@@ -111,24 +126,29 @@ class MainFragment : BaseFragment() {
                 GamesPaginationScrollListener(
                     layoutManager = linearLayoutManager,
                     loadNextPageFunction = { loadNextPage() },
-                    isLastPageFunction = { viewModel.lastPageReached },
-                    isLoadingFunction = { viewModel.isLoadingNextPage }
-                    )
+                    isLastPageFunction = { viewModel.lastPageReached() },
+                    isLoadingFunction = { viewModel.isLoading() },
+                )
             )
         }
-        paginationAdapter.setGameList(viewModel.loadedGames.value?: arrayListOf())
+        paginationAdapter.setGameList(viewModel.gamesList.value ?: arrayListOf())
+    }
+
+    private fun hideFooter() {
+        binding.footer.footerLayout.visibility = View.GONE
     }
 
     private fun loadNextPage() {
-        paginationAdapter.addLoadingFooter()
-        viewModel.fetchNextPage()
+        binding.footer.footerLayout.visibility = View.VISIBLE
+        viewModel.processViewEvent(MainViewEvent.PaginationEvent.FetchNextPageEvent())
     }
 
     private fun onGameClicked(game: Game) {
-        viewModel.onGameClicked(game)
+        viewModel.processViewEvent(MainViewEvent.GoToGameDetails(game.id))
     }
 
     private fun finishRefreshing() {
+        viewModel.refreshFinished()
         binding.swipeContainer.post {
             binding.swipeContainer.isRefreshing = false
         }

@@ -8,6 +8,7 @@ import com.spitzer.igdbgames.core.BaseViewModel
 import com.spitzer.igdbgames.core.Event
 import com.spitzer.igdbgames.core.NavigationCommand
 import com.spitzer.igdbgames.repository.data.Game
+import com.spitzer.igdbgames.ui.pagination.PaginationMediator
 import com.spitzer.igdbgames.ui.pagination.PaginationResult
 import com.spitzer.igdbgames.ui.pagination.PaginationUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,86 +20,184 @@ class MainViewModel @Inject constructor(
     private val paginationUseCases: PaginationUseCases
 ) : BaseViewModel() {
 
-    private val _gamesAddedState = MutableLiveData<Event<Boolean>>()
-    val gamesAddedState: LiveData<Event<Boolean>> = _gamesAddedState
+    private val paginationMediator: PaginationMediator = PaginationMediator()
 
-    private val _gamesLoadingState = MutableLiveData<Event<Boolean>>()
-    val gamesLoadingState: LiveData<Event<Boolean>> = _gamesLoadingState
+    private val _paginationViewState = MutableLiveData<Event<MainViewState>>()
+    val paginationViewState: LiveData<Event<MainViewState>> = _paginationViewState
 
-    private val _lastPageReachedState = MutableLiveData<Event<Boolean>>()
-    val lastPageReachedState: LiveData<Event<Boolean>> = _lastPageReachedState
-
-    var lastPageReached = false
-    var isLoadingNextPage = false
     private var actualPage = 1
 
-    private val _addedGames = MutableLiveData<ArrayList<Game>>()
-    val addedGames: LiveData<ArrayList<Game>> = _addedGames
-    private val _loadedGames = MutableLiveData<ArrayList<Game>>()
-    val loadedGames: LiveData<ArrayList<Game>> = _loadedGames
+    private val _gamesList = MutableLiveData<ArrayList<Game>>()
+    val gamesList: LiveData<ArrayList<Game>> = _gamesList
 
     init {
         loadInitialGamesList()
     }
 
-    fun refreshGamesList() {
-        loadInitialGamesList()
-    }
-
-    fun fetchNextPage() {
-        loadNextPage()
-    }
-
-    fun onGameClicked(gameClicked: Game) {
-        val action = MainFragmentDirections
-            .actionMainFragmentToGameDetailsFragment(
-                gameClicked.id
-            )
-        _navigation.postValue(Event(NavigationCommand.To(action)))
+    fun processViewEvent(viewEvent: MainViewEvent) {
+        when (viewEvent) {
+            is MainViewEvent.PaginationEvent.FetchNextPageEvent -> {
+                paginationMediator.isLoadingNextPage = true
+                paginationMediator.isRefreshing = false
+                loadNextPage()
+            }
+            is MainViewEvent.PaginationEvent.RefreshGameListEvent -> {
+                actualPage = 1
+                paginationMediator.isLoadingNextPage = false
+                paginationMediator.isLastPage = false
+                paginationMediator.isRefreshing = true
+                refreshInitialGameList()
+            }
+            is MainViewEvent.GoToGameDetails -> {
+                val action = MainFragmentDirections
+                    .actionMainFragmentToGameDetailsFragment(
+                        viewEvent.gameId
+                    )
+                _navigation.postValue(Event(NavigationCommand.To(action)))
+            }
+        }
     }
 
     private fun loadInitialGamesList() = viewModelScope.launch {
-        actualPage = 1
+
         setLoading(true)
+
         val paginationResult = paginationUseCases.fetchNextPage(actualPage)
+
         when (paginationResult) {
+
             is PaginationResult.Success -> {
+
                 actualPage++
+
                 if (paginationResult.data.isNotEmpty()) {
-                    _loadedGames.postValue(paginationResult.data!!)
-                    _gamesLoadingState.postValue(Event(true))
+
+                    _gamesList.postValue(paginationResult.data!!)
+                    _paginationViewState.postValue(
+                        Event(
+                            MainViewState.LoadingInitialGameList(
+                                true,
+                                paginationResult.paginationInfo.isLastPage
+                            )
+                        )
+                    )
+
+                } else {
+                    // TODO define and manage this state
                 }
-                _lastPageReachedState.postValue(Event(paginationResult.paginationInfo.isLastPage))
             }
             is PaginationResult.Error -> {
+
                 _snackbarError.postValue(Event(R.string.snackbar_could_not_fetch))
-                _gamesLoadingState.postValue(Event(false))
+
+                _paginationViewState.postValue(
+                    Event(
+                        MainViewState.LoadingInitialGameList(
+                            false,
+                            false
+                        )
+                    )
+                )
             }
         }
         setLoading(false)
     }
 
-    private fun loadNextPage() = viewModelScope.launch {
-        isLoadingNextPage = true
+    private fun refreshInitialGameList() = viewModelScope.launch {
+
         val paginationResult = paginationUseCases.fetchNextPage(actualPage)
+
         when (paginationResult) {
+
             is PaginationResult.Success -> {
+
                 actualPage++
+
                 if (paginationResult.data.isNotEmpty()) {
-                    if (paginationResult.paginationInfo.isFullDataRetrieved) {
-                        _loadedGames.postValue(paginationResult.data!!)
-                        _gamesLoadingState.postValue(Event(true))
-                    } else {
-                        _addedGames.postValue(paginationResult.data!!)
-                        _loadedGames.value?.addAll(paginationResult.data!!)
-                        _gamesAddedState.postValue(Event(true))
-                    }
+
+                    _gamesList.postValue(paginationResult.data!!)
+                    _paginationViewState.postValue(
+                        Event(
+                            MainViewState.RefreshingGameList(
+                                true,
+                                paginationResult.paginationInfo.isLastPage
+                            )
+                        )
+                    )
+
+                } else {
+                    // TODO define and manage this state
                 }
-                _lastPageReachedState.postValue(Event(paginationResult.paginationInfo.isLastPage))
+            }
+            is PaginationResult.Error -> {
+
+                _snackbarError.postValue(Event(R.string.snackbar_could_not_fetch))
+
+                _paginationViewState.postValue(
+                    Event(
+                        MainViewState.RefreshingGameList(
+                            false,
+                            false
+                        )
+                    )
+                )
+            }
+        }
+    }
+
+    private fun loadNextPage() = viewModelScope.launch {
+
+        when (val paginationResult = paginationUseCases.fetchNextPage(actualPage)) {
+
+            is PaginationResult.Success -> {
+
+                actualPage++
+
+                if (paginationResult.data.isNotEmpty()) {
+
+                    if (paginationResult.paginationInfo.isFullDataRetrieved) {
+
+                        _gamesList.postValue(paginationResult.data!!)
+
+                        paginationMediator.isLastPage = paginationResult.paginationInfo.isLastPage
+                        _paginationViewState.postValue(
+                            Event(
+                                MainViewState.AddedAllGamesFromDb(
+                                    true,
+                                    true
+                                )
+                            )
+                        )
+                    } else {
+                        val position = gamesList.value?.size ?: 0
+                        _gamesList.value?.addAll(paginationResult.data!!)
+                        _paginationViewState.postValue(
+                            Event(
+                                MainViewState.AddNextGamePageToList(
+                                    true,
+                                    paginationResult.paginationInfo.isLastPage,
+                                    position,
+                                    paginationResult.data.size
+                                )
+                            )
+                        )
+                    }
+                } else {
+                    // TODO define and manage this state
+                }
             }
             is PaginationResult.Error -> {
                 _snackbarError.postValue(Event(R.string.snackbar_could_not_fetch))
-                _gamesLoadingState.postValue(Event(false))
+                _paginationViewState.postValue(
+                    Event(
+                        MainViewState.AddNextGamePageToList(
+                            false,
+                            false,
+                            0,
+                            0
+                        )
+                    )
+                )
             }
         }
 
@@ -106,6 +205,18 @@ class MainViewModel @Inject constructor(
 
     private fun setLoading(isLoading: Boolean) {
         _loading.postValue(Event(isLoading))
-        isLoadingNextPage = isLoading
+    }
+
+    fun lastPageReached() = paginationMediator.isLastPage
+    fun isLoading() = paginationMediator.isLoadingNextPage || paginationMediator.isRefreshing
+    fun isLoadingNextPage() = paginationMediator.isLoadingNextPage
+    fun isRefreshing() = paginationMediator.isRefreshing
+
+    fun nextPageLoaded() {
+        paginationMediator.isLoadingNextPage = false
+    }
+
+    fun refreshFinished() {
+        paginationMediator.isRefreshing = false
     }
 }
