@@ -12,6 +12,10 @@ sealed class MainViewEvent {
             private val isFetchNextPageEvent: Boolean = true
         ) : PaginationEvent()
 
+//        data class RetryFetchNextPageEvent(
+//            private val isRetryFetchNextPageEvent: Boolean = true
+//        ) : PaginationEvent()
+
     }
 
     data class GoToGameDetails(val gameId: Int) : MainViewEvent()

@@ -72,7 +72,7 @@ class MainFragment : BaseFragment() {
                                 hideFooter()
                             }
                         } else {
-                            // TODO errorLoading on the footer view not in adapter
+                            // TODO
                             // showFooterError()
                         }
                     }
@@ -107,6 +107,10 @@ class MainFragment : BaseFragment() {
             false
         )
 
+        binding.footer.retryButton.setOnClickListener {
+            //TODO define MainViewEvent.PaginationEvent.RetryFetchNextPage viewEvent and then handle it in the viewModel
+        }
+
         paginationAdapter = GamesPaginationAdapter(
             itemClickFunction = { game -> onGameClicked(game) },
             primaryStarColor = resources.getColor(R.color.IGDBsoftViolet),
@@ -114,9 +118,7 @@ class MainFragment : BaseFragment() {
             drawableFallbackImage = AppCompatResources.getDrawable(
                 requireContext(),
                 R.drawable.ic_no_image_24
-            )!!,
-            retryFunction = { Unit }, // TODO feature to implement
-            onFinishRefresh = { Unit } // TODO features to implement
+            )!!
         )
 
         binding.gameListRecyclerView.apply {

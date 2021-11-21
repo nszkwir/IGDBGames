@@ -19,11 +19,9 @@ import com.squareup.picasso.Picasso
 
 class GamesPaginationAdapter(
     private val itemClickFunction: (Game) -> Unit,
-    private val onFinishRefresh: () -> Unit,
     private val primaryStarColor: Int,
     private val secondaryStarColor: Int,
-    private val drawableFallbackImage: Drawable,
-    private val retryFunction: () -> Unit = {}
+    private val drawableFallbackImage: Drawable
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder?>() {
 
     private var gameList: MutableList<Game> = mutableListOf()

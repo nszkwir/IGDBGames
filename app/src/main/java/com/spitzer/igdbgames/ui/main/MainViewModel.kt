@@ -48,6 +48,8 @@ class MainViewModel @Inject constructor(
                 paginationMediator.isRefreshing = true
                 refreshInitialGameList()
             }
+//            is MainViewEvent.PaginationEvent.RetryFetchNextPageEvent -> { // TODO
+//            }
             is MainViewEvent.GoToGameDetails -> {
                 val action = MainFragmentDirections
                     .actionMainFragmentToGameDetailsFragment(
@@ -184,6 +186,8 @@ class MainViewModel @Inject constructor(
                     }
                 } else {
                     // TODO define and manage this state
+                    // RetryFetchNextPage viewState must be defined
+                    // and handled by MainFragment to set the retry button as visible
                 }
             }
             is PaginationResult.Error -> {
