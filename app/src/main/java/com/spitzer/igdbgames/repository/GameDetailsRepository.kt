@@ -10,4 +10,11 @@ interface GameDetailsRepository {
         successFromDatabase: (Game?, LocalRating?) -> Unit,
         error: () -> Unit
     )
+
+    suspend fun udpateLocalRating(
+        gameId: Int,
+        localRating: Double,
+        success: () -> Unit,
+        error: () -> Unit
+    )
 }
