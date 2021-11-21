@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.spitzer.igdbgames.R
 import com.spitzer.igdbgames.databinding.GameItemBinding
-import com.spitzer.igdbgames.databinding.LoadingFooterBinding
+
 import com.spitzer.igdbgames.extensions.formatCoverImageUrl
 import com.spitzer.igdbgames.extensions.setStarsProgressColor
 import com.spitzer.igdbgames.repository.data.Game
@@ -27,13 +27,10 @@ class GamesPaginationAdapter(
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder?>() {
 
     private var gameList: MutableList<Game> = mutableListOf()
-    private var isLoadingAdded = false
-    private var errorLoading = false
 
     @SuppressLint("NotifyDataSetChanged")
     fun setGameList(pGameList: ArrayList<Game>) {
-        gameList.clear()
-        gameList.addAll(pGameList)
+        gameList = pGameList
         notifyDataSetChanged()
     }
 
@@ -41,97 +38,35 @@ class GamesPaginationAdapter(
         parent: ViewGroup,
         viewType: Int
     ): RecyclerView.ViewHolder {
-
-        return when (viewType) {
-            GAME_ITEM -> {
-                GameItemViewHolder(
-                    GameItemBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    ),
-                    itemClickFunction
-                )
-            }
-            LOADING -> {
-                LoadingViewHolder(
-                    LoadingFooterBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    ),
-                    retryFunction
-                )
-            }
-            else -> {
-                LoadingViewHolder(
-                    LoadingFooterBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    ),
-                    retryFunction
-                )
-            }
-        }
+        return GameItemViewHolder(
+            GameItemBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            ),
+            itemClickFunction
+        )
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (getItemViewType(position)) {
-            GAME_ITEM -> {
-                getItem(position).let {
-                    (holder as GameItemViewHolder).bind(
-                        it,
-                        primaryStarColor,
-                        secondaryStarColor,
-                        drawableFallbackImage
-                    )
-                }
-            }
-            LOADING -> {
-                (holder as LoadingViewHolder).bind(errorLoading)
-            }
+
+        getItem(position).let {
+            (holder as GameItemViewHolder).bind(
+                it,
+                primaryStarColor,
+                secondaryStarColor,
+                drawableFallbackImage
+            )
         }
     }
 
     override fun getItemCount() = gameList.size
 
-    override fun getItemViewType(position: Int): Int {
-        return if (position == gameList.size - 1 && isLoadingAdded) LOADING else GAME_ITEM
-    }
-
-    fun addLoadingFooter() {
-        isLoadingAdded = true
-        add(Game(-999))
-    }
-
-    fun removeLoadingFooter() {
-        val position = gameList.size - 1
-        gameList.removeAt(position)
-        isLoadingAdded = false
-        errorLoading = false
-        notifyItemRemoved(position)
-    }
-
-    private fun add(game: Game) {
-        val newPosition = gameList.size
-        gameList.add(newPosition, game)
-        notifyItemInserted(newPosition)
-    }
-
-    fun addAll(newGames: List<Game>) {
-        gameList.addAll(newGames)
-        notifyItemRangeInserted(gameList.size, newGames.size)
+    fun notifyGamesInserted(position: Int, size: Int) {
+        notifyItemRangeInserted(position, size)
     }
 
     private fun getItem(position: Int) = gameList[position]
-
-    fun showErrorLoading() {
-        if (isLoadingAdded) {
-            errorLoading = true
-            notifyItemChanged(gameList.size - 1)
-        }
-    }
 
     inner class GameItemViewHolder(
         private val itemBinding: GameItemBinding,
@@ -195,29 +130,7 @@ class GamesPaginationAdapter(
         }
     }
 
-    inner class LoadingViewHolder(
-        private val itemBinding: LoadingFooterBinding,
-        private val retryFunction: () -> Unit,
-    ) : RecyclerView.ViewHolder(itemBinding.root) {
-
-        fun bind(errorLoading: Boolean) {
-            if (errorLoading) {
-                itemBinding.retryButton.setOnClickListener {
-                    retryFunction()
-                }
-                itemBinding.errorMsg.visibility = VISIBLE
-                itemBinding.retryButton.visibility = VISIBLE
-            } else {
-                itemBinding.errorMsg.visibility = GONE
-                itemBinding.retryButton.visibility = GONE
-            }
-        }
-    }
-
     companion object {
-        private const val LOADING = 0
-        private const val GAME_ITEM = 1
         private const val DEFAULT_TITLE_STRING = ""
-
     }
 }

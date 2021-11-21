@@ -29,7 +29,7 @@ class PaginationUseCases @Inject constructor(
                     PaginationInfo(
                         true,
                         pageToFetch + 1,
-                        false
+                        true
                     )
                 )
             }
