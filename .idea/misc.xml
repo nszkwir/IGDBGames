@@ -7,7 +7,7 @@
         <entry key="app/src/main/res/layout/game_item.xml" value="0.35052083333333334" />
         <entry key="app/src/main/res/layout/loading_footer.xml" value="0.35052083333333334" />
         <entry key="app/src/main/res/layout/main_activity.xml" value="0.31157407407407406" />
-        <entry key="app/src/main/res/layout/main_fragment.xml" value="0.35052083333333334" />
+        <entry key="app/src/main/res/layout/main_fragment.xml" value="0.25" />
         <entry key="app/src/main/res/layout/screenshot_item.xml" value="0.31157407407407406" />
         <entry key="app/src/main/res/layout/video_fragment.xml" value="0.31157407407407406" />
         <entry key="app/src/main/res/layout/video_item.xml" value="0.19479166666666667" />
