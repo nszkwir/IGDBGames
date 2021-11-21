@@ -7,7 +7,6 @@ import android.widget.RatingBar.OnRatingBarChangeListener
 import androidx.fragment.app.DialogFragment
 import com.spitzer.igdbgames.databinding.MyRatingLayoutBinding
 
-
 class RatingDialog(
     var gameRating: Float?,
     val onPositiveClickFunction: (Float?) -> Unit
